@@ -434,6 +434,37 @@ def execute_agent_query(user_query: str):
                     st.markdown("---")
                     st.markdown("### 📋 최종 여행 계획")
                     response = result.get("output", "응답을 생성할 수 없습니다.")
+                    
+                    # D-Day 정보가 tool_executions에 있는지 확인하고 추가
+                    d_day_info = None
+                    for tool_exec in st.session_state.tool_executions:
+                        if tool_exec.get("name") == "calculate_d_day" and tool_exec.get("status") == "completed":
+                            output = tool_exec.get("output")
+                            if isinstance(output, dict):
+                                d_day_info = output
+                            elif isinstance(output, str):
+                                try:
+                                    import json
+                                    d_day_info = json.loads(output)
+                                except:
+                                    pass
+                            break
+                    
+                    # D-Day 정보가 있으면 응답 앞에 추가
+                    if d_day_info and "formatted" in d_day_info:
+                        d_day_section = f"""
+### 📅 여행 D-Day 정보
+
+- **출발일**: {d_day_info.get('date', 'N/A')}
+- **D-Day**: {d_day_info.get('formatted', 'N/A')}
+- **남은 일수**: {d_day_info.get('d_day', 'N/A')}일
+- **준비 기간**: {d_day_info.get('preparation', {}).get('weeks', 'N/A')}주
+- **준비 긴급도**: {d_day_info.get('preparation', {}).get('urgency', 'N/A')}
+
+---
+"""
+                        response = d_day_section + response
+                    
                     st.markdown(response)
                     
                     # Save to chat history (한 번만 저장)

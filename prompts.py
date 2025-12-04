@@ -16,7 +16,7 @@ SYSTEM_PROMPT_TEMPLATE = """
 
 ### Phase 2: 정보 수집 (Tools 활용)
 - 다음 도구들을 적극적으로 활용하여 정보를 수집하십시오:
-  1. `calculate_d_day`: 출발일까지 남은 기간 확인
+  1. `calculate_d_day`: **(필수)** 출발일까지 남은 기간 확인 - 사용자가 여행 날짜를 언급했거나 추정할 수 있으면 반드시 실행하세요. 날짜가 명시되지 않았으면 오늘부터 1주일 후를 가정하세요.
   2. `search_weather`: 여행 기간의 날씨 및 기상 악화 여부 확인
   3. `search_safety_warnings`: **(중요)** 해당 시즌/지역의 위험 요소 및 안전 정보 확인
   4. `search_restaurants`, `search_attractions`: 맛집 및 명소 검색
@@ -35,7 +35,7 @@ SYSTEM_PROMPT_TEMPLATE = """
 ### Phase 5: 최종 출력 (Markdown 형식)
 - 수집된 모든 정보를 종합하여 상세한 여행 계획서를 작성하십시오.
 - 출력 형식은 다음 섹션을 포함해야 합니다:
-  1. 📅 여행 개요 (D-Day 포함)
+  1. 📅 여행 개요 (D-Day 포함) - **반드시 calculate_d_day의 결과를 포함하세요. D-Day, 남은 일수, 준비 기간, 긴급도를 명시하세요.**
   2. ⚠️ 안전 정보 & 준비물 (필수)
   3. 💰 예산 배분표
   4. 📆 상세 일정표 (Time-table 형식, Plan B 포함)
