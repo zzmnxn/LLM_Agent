@@ -1,44 +1,57 @@
 """
-여행 계획 AI 비서 - Agent Builder
-LangChain AgentExecutor를 생성합니다.
+Agent Builder Module
+Team Member A가 만든 tools와 prompts를 사용하여 AgentExecutor를 생성합니다.
 """
 
+from typing import List
 from langchain_openai import ChatOpenAI
-from langchain.agents import create_openai_tools_agent, AgentExecutor
-from tools import ALL_TOOLS
-from prompts import get_agent_prompt
-import os
+from langchain_classic.agents import AgentExecutor, create_openai_tools_agent
+from langchain_core.tools import BaseTool
+from langchain_core.prompts import ChatPromptTemplate
 
-def build_travel_agent(model_name="gpt-4o-mini"):
+
+def build_agent_executor(
+    tools: List[BaseTool],
+    prompt: ChatPromptTemplate,
+    llm: ChatOpenAI,
+    verbose: bool = True
+) -> AgentExecutor:
     """
-    여행 계획 Agent를 생성하고 반환합니다.
+    Tools와 Prompt를 사용하여 AgentExecutor를 생성합니다.
     
     Args:
-        model_name (str): 사용할 OpenAI 모델명 (기본값: gpt-4o-mini)
-        
+        tools: LangChain BaseTool 리스트
+        prompt: ChatPromptTemplate
+        llm: ChatOpenAI 인스턴스
+        verbose: AgentExecutor의 verbose 옵션 (기본값: True)
+    
     Returns:
-        AgentExecutor: 실행 가능한 에이전트 객체
+        AgentExecutor: 구성된 AgentExecutor 인스턴스
     """
-    # 1. LLM 초기화 (Tools 바인딩)
-    llm = ChatOpenAI(
-        model=model_name,
-        temperature=0.7,
-        api_key=os.environ.get("OPENAI_API_KEY")
-    )
+    # Agent 생성
+    agent = create_openai_tools_agent(llm, tools, prompt)
     
-    # 2. Prompt 가져오기
-    prompt = get_agent_prompt()
-    
-    # 3. Agent 생성 (OpenAI Tools Agent)
-    agent = create_openai_tools_agent(llm, ALL_TOOLS, prompt)
-    
-    # 4. Executor 생성 (실행기)
-    # verbose=True로 설정하면 터미널에서 생각 과정(CoT)을 볼 수 있습니다.
+    # AgentExecutor 생성
     agent_executor = AgentExecutor(
-        agent=agent, 
-        tools=ALL_TOOLS, 
-        verbose=True,
-        handle_parsing_errors=True
+        agent=agent,
+        tools=tools,
+        verbose=verbose,
+        handle_parsing_errors=True,  # 파싱 오류 처리
+        max_iterations=15,  # 최대 반복 횟수
+        max_execution_time=120  # 최대 실행 시간 (초)
     )
     
     return agent_executor
+
+
+def get_agent_executor(
+    tools: List[BaseTool],
+    prompt: ChatPromptTemplate,
+    llm: ChatOpenAI,
+    verbose: bool = True
+) -> AgentExecutor:
+    """
+    build_agent_executor의 별칭 함수 (호환성을 위해 제공)
+    """
+    return build_agent_executor(tools, prompt, llm, verbose)
+
